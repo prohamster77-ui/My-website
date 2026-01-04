@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Multi-Branch Store</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; padding: 20px; background-color: #f4f4f9; }
+        .product-card { 
+            border: 1px solid #ddd; padding: 15px; margin: 10px; 
+            display: inline-block; width: 220px; vertical-align: top;
+            border-radius: 12px; background: white; text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .qty-controls { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 15px 0; }
+        .qty-btn { width: 30px; height: 30px; cursor: pointer; border-radius: 50%; border: 1px solid #ccc; background: #eee; }
+        .buy-btn { 
+            background-color: #25D366; color: white; border: none; padding: 10px 20px; 
+            cursor: pointer; border-radius: 8px; width: 100%; font-weight: bold;
+        }
+        .buy-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+        .stock-info { font-size: 0.9em; color: #666; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Welcome to My Store</h1>
+    
+    <div style="margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+        <label><strong>Pilih Cabang Toko:</strong></label>
+        <select id="storeSelector" onchange="updateStockDisplay()" style="padding: 8px; border-radius: 4px;">
+            {% for store in stores %}
+            <option value="{{ store.phone }}" data-id="{{ store.id }}">{{ store.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div id="product-list">
+        {% for product in products %}
+        <div class="product-card">
+            <img src="{{ product.image }}" width="100%" style="border-radius: 8px; height: 150px; object-fit: cover;">
+            <h3>{{ product.name }}</h3>
+            <p><strong>{{ product.price }}</strong></p>
+            
+            <p class="stock-info">Stok di cabang ini: <span id="display-stock-{{ product.id }}">0</span></p>
+            
+            <div id="controls-{{ product.id }}">
+                <div class="qty-controls">
+                    <button class="qty-btn" type="button" onclick="changeQty('{{ product.id }}', -1)">-</button>
+                    <b id="qty-text-{{ product.id }}">1</b> 
+                    <button class="qty-btn" type="button" onclick="changeQty('{{ product.id }}', 1)">+</button>
+                </div>
+
+                <button id="btn-{{ product.id }}" class="buy-btn" onclick="buyNow('{{ product.name }}', '{{ product.id }}')">
+                    Buy Now (WhatsApp)
+                </button>
+            </div>
+            
+            <div id="out-of-stock-{{ product.id }}" style="display: none;">
+                <p style="color: red; font-weight: bold;">HABIS DI CABANG INI</p>
+                <button class="buy-btn" disabled>Out of Stock</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // This converts your Python products list into a JavaScript object we can use
+        const products = {{ products | tojson }};
+
+        // 1. Function to update UI based on selected store
+        function updateStockDisplay() {
+            const selector = document.getElementById('storeSelector');
+            const selectedStoreId = selector.options[selector.selectedIndex].getAttribute('data-id');
+
+            products.forEach(p => {
+                const stock = p.stocks[selectedStoreId] || 0;
+                document.getElementById('display-stock-' + p.id).innerText = stock;
+                
+                const controls = document.getElementById('controls-' + p.id);
+                const outOfStockDiv = document.getElementById('out-of-stock-' + p.id);
+                
+                if (stock > 0) {
+                    controls.style.display = 'block';
+                    outOfStockDiv.style.display = 'none';
+                } else {
+                    controls.style.display = 'none';
+                    outOfStockDiv.style.display = 'block';
+                }
+                // Reset quantity text to 1
+                document.getElementById('qty-text-' + p.id).innerText = "1";
+            });
+        }
+
+        // 2. Function to handle + and -
+        function changeQty(productId, amount) {
+            const selector = document.getElementById('storeSelector');
+            const selectedStoreId = selector.options[selector.selectedIndex].getAttribute('data-id');
+            const product = products.find(p => p.id === productId);
+            const maxStock = product.stocks[selectedStoreId];
+
+            const qtyElement = document.getElementById('qty-text-' + productId);
+            let currentQty = parseInt(qtyElement.innerText);
+            let newQty = currentQty + amount;
+
+            if (newQty < 1) newQty = 1;
+            if (newQty > maxStock) {
+                alert("Maaf, stok hanya tersedia " + maxStock);
+                newQty = maxStock;
+            }
+
+            qtyElement.innerText = newQty;
+        }
+
+        // 3. Function to open WhatsApp
+        function buyNow(productName, productId) {
+            const selector = document.getElementById('storeSelector');
+            const phone = selector.value;
+            const quantity = document.getElementById('qty-text-' + productId).innerText;
+
+            const message = "Halo! saya mau pesan " + quantity + " unit " + productName + ". Apakah masih tersedia?";
+            const url = "https://wa.me/" + phone + "?text=" + encodeURIComponent(message);
+            window.open(url, '_blank');
+        }
+
+        // Run once on page load to set initial stocks
+        window.onload = updateStockDisplay;
+    </script>
+</body>
+</html>

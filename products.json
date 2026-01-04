@@ -1,0 +1,22 @@
+[
+    {
+        "id": "1",
+        "name": "pp",
+        "price": "150.000",
+        "image": "idk",
+        "stocks": {
+            "jkt": 0,
+            "bali": 67
+        }
+    },
+    {
+        "id": "2",
+        "name": "asoy",
+        "price": "150.000",
+        "image": "idk",
+        "stocks": {
+            "jkt": 67,
+            "bali": 67
+        }
+    }
+]

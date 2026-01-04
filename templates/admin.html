@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Portal - Multi-Store Manager</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; background-color: #f0f2f5; display: flex; flex-direction: column; align-items: center; }
+        .container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; max-width: 1200px; }
+        .admin-box { border: 1px solid #ddd; padding: 25px; border-radius: 12px; width: 350px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h3 { margin-top: 0; color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        label { font-size: 0.9em; font-weight: bold; color: #555; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0 15px 0; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1em; }
+        
+        .btn { border: none; padding: 12px; width: 100%; cursor: pointer; border-radius: 6px; font-weight: bold; font-size: 1em; transition: 0.3s; }
+        .btn-update { background: #007bff; color: white; }
+        .btn-update:hover { background: #0056b3; }
+        .btn-add { background: #28a745; color: white; }
+        .btn-add:hover { background: #218838; }
+        
+        .delete-btn { color: white; background: #dc3545; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 0.85em; transition: 0.3s; }
+        .delete-btn:hover { background: #c82333; }
+        
+        .item-list { width: 100%; max-width: 800px; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
+        .item-row:last-child { border-bottom: none; }
+        .stock-tag { background: #e9ecef; padding: 2px 8px; border-radius: 4px; font-size: 0.9em; margin-right: 5px; }
+    </style>
+</head>
+<body>
+
+    <h1 style="margin-bottom: 30px;">Store Management System</h1>
+
+    <div class="container">
+        <div class="admin-box">
+            <h3>Add New Product</h3>
+            <form action="/add_new_item" method="POST">
+                <label>Product Name</label>
+                <input type="text" name="name" placeholder="e.g. Classic Hoodie" required>
+                
+                <label>Price</label>
+                <input type="text" name="price" placeholder="e.g. Rp 150.000" required>
+                
+                <label>Image Link (URL)</label>
+                <input type="text" name="image" placeholder="https://..." required>
+                
+                <p style="font-size: 0.8em; color: #666;">Note: New items start with 0 stock in all branches.</p>
+                <button class="btn btn-add" type="submit">Create Product</button>
+            </form>
+        </div>
+
+        <div class="admin-box">
+            <h3>Update Branch Stock</h3>
+            <form action="/update_stock" method="POST">
+                <label>Select Product</label>
+                <select name="product_id">
+                    {% for p in products %}
+                    <option value="{{ p.id }}">{{ p.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <label>Select Store/Branch</label>
+                <select name="store_id">
+                    {% for s in stores %}
+                    <option value="{{ s.id }}">{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <label>New Quantity</label>
+                <input type="number" name="new_stock" placeholder="Enter number" required min="0">
+                
+                <button class="btn btn-update" type="submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="item-list">
+        <h3>Current Inventory Overview</h3>
+        {% for product in products %}
+        <div class="item-row">
+            <div>
+                <strong>{{ product.name }}</strong><br>
+                <small style="color: #666;">
+                    {% for store_id, qty in product.stocks.items() %}
+                        <span class="stock-tag">{{ store_id.upper() }}: {{ qty }}</span>
+                    {% endfor %}
+                </small>
+            </div>
+            <a href="/delete_item/{{ product.id }}" class="delete-btn" onclick="return confirm('Hapus {{ product.name }} dari database permanent?')">Delete Item</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div style="margin-top: 30px; margin-bottom: 50px;">
+        <a href="/" style="text-decoration: none; color: #007bff; font-weight: bold;">← Return to Storefront</a>
+    </div>
+
+</body>
+</html>
