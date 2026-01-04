@@ -6,8 +6,9 @@ DATA_FILE = 'products.json'
 
 # --- HARDCODED STORES ---
 stores = [
-    {"id": "jkt", "name": "Jakarta Branch", "phone": "628123456789"},
-    {"id": "bali", "name": "Bali Branch", "phone": "628987654321"}
+    {"id": "Sekayu", "name": "Toko Musi Baru Sekayu", "phone": "628123456789"},
+    {"id": "Simpang Patal", "name": "Toko Musi Baru Simpang Patal", "phone": "628987654321"},
+    {"id": "Simpang Prabumulih", "name": "Toko Musi Baru Simpang Prabumulih", "phone": "628987654321"},
 ]
 
 def load_data():
